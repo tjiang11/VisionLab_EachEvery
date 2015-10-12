@@ -22,9 +22,6 @@ public class DotsPair {
     
     /** The second letter. */
     private DotSet dotSetTwo;
-    
-    /** The difference in number of dots between the sets. */
-    private int difference;
         
     /** The control type of this pair */
     private ControlType controlType;
@@ -38,26 +35,11 @@ public class DotsPair {
     /** Random number generator. */
     private Random randomGenerator = new Random(); 
     
-    /** 
-     * Constructor for DotsPair.
-     * @param numDotsOne The number of dots in the first set.
-     * @param numDotsTwo The number of dots in the second set.
-     * @param controlType The control type of this dots pair.
-     *      (Whether the dot sets should have equal areas, inverse areas, or equal average radii.)
-     */
-    public DotsPair(int numDotsOne, int numDotsTwo, ControlType controlType) {
-        loadConfig();
-
-        this.dotSetOne = new DotSet(numDotsOne);
-        this.dotSetTwo = new DotSet(numDotsTwo, this.dotSetOne);
-        
-        this.controlType = controlType;
-        
-        this.defineControlType();
-        
-        if (TOTAL_AREA_CONTROL_ON) {
-            this.scaleAreas();
-        }
+    public DotsPair(int numCirclesOne, int numSquaresOne, int numCirclesTwo, int numSquaresTwo,
+    		ControlType controlType) {
+    	this.dotSetOne = new DotSet(numCirclesOne, numSquaresOne);
+    	this.dotSetTwo = new DotSet(numCirclesTwo, numSquaresTwo, this.dotSetOne);
+    	this.controlType = controlType;
     }
     
     /** Load configuration settings. */
@@ -157,16 +139,6 @@ public class DotsPair {
 
     public void setDotSetTwo(DotSet dotSetTwo) {
         this.dotSetTwo = dotSetTwo;
-    }
-
-
-    public int getDifference() {
-        return this.difference;
-    }
-
-
-    public void setDifference(int difference) {
-        this.difference = difference;
     }
 
     public ControlType getControlType() {

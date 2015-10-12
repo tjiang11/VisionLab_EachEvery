@@ -32,18 +32,18 @@ import java.util.Random;
 public class DotsPairGenerator {
     
     /** Maximum number of total dots to be shown in one trial. */
-    static final int MAX_DOTS = 60;
+    static final int MAX_DOTS = 20;
     /** Minimum number of total dots to be shown in one trial. */
-    static final int MIN_DOTS = 20;
+    static final int MIN_DOTS = 10;
     
     /** Max number of times the same relative size (or control type) may be the correct choice. */
     static final int MAX_TIMES_SAME_SIZE_CORRECT = 3;
     
     /** Map from each block to an integer representation. */
-    public static final int MORE_THAN_HALF_BLOCK = 0;
-    public static final int MORE_THAN_FIFTY_BLOCK = 1;
-    public static final int MORE_THAN_SIXTY_BLOCK = 2;
-    public static final int MORE_THAN_SEVENTYFIVE_BLOCK = 3;    
+    public static final int SOME_DOTS_BLOCK = 0;
+    public static final int SOME_OF_THE_DOTS_BLOCK = 1;
+    public static final int EACH_DOT_BLOCK = 2;
+    public static final int EVERY_DOT_BLOCK = 3;    
     
     /** Random number generator. */
     Random randomGenerator = new Random();
@@ -86,10 +86,10 @@ public class DotsPairGenerator {
      */
     private void fillBlockSet() {
         ArrayList<Integer> tempSet = new ArrayList<Integer>();
-        tempSet.add(MORE_THAN_HALF_BLOCK);
-        tempSet.add(MORE_THAN_FIFTY_BLOCK);
-        tempSet.add(MORE_THAN_SIXTY_BLOCK);
-        tempSet.add(MORE_THAN_SEVENTYFIVE_BLOCK);
+        tempSet.add(SOME_DOTS_BLOCK);
+        tempSet.add(SOME_OF_THE_DOTS_BLOCK);
+        tempSet.add(EVERY_DOT_BLOCK);
+        tempSet.add(EACH_DOT_BLOCK);
         int size = tempSet.size();
         for (int i = 0; i < size; i++) {
             this.blockSet.add((Integer) tempSet.remove(randomGenerator.nextInt(tempSet.size())));
@@ -102,8 +102,9 @@ public class DotsPairGenerator {
      * Get a new pair based on current mode. 
      */
     public void getNewModePair() {
-        Ratio ratio = this.decideRatio();
-        this.getNewPair(ratio);
+        Ratio ratioCircles = this.decideRatio();
+        Ratio ratioSquares = ratioCircles;
+        this.getNewPair(ratioCircles, ratioSquares);
     }
     
     /**
@@ -130,36 +131,16 @@ public class DotsPairGenerator {
      */
     private void fillRatiosBucket() {
         switch (this.blockMode) {
-        case MORE_THAN_FIFTY_BLOCK:
-        case MORE_THAN_HALF_BLOCK:
-                this.ratiosBucket.add(new Ratio(9,16));
-                this.ratiosBucket.add(new Ratio(2,3));
-                this.ratiosBucket.add(new Ratio(11,14));
-                this.ratiosBucket.add(new Ratio(12,13));
-                this.ratiosBucket.add(new Ratio(13,12));
-                this.ratiosBucket.add(new Ratio(14,11));
-                this.ratiosBucket.add(new Ratio(3,2));
-                this.ratiosBucket.add(new Ratio(16,9));
-            break;
-        case MORE_THAN_SIXTY_BLOCK:
-                this.ratiosBucket.add(new Ratio(11,14));
-                this.ratiosBucket.add(new Ratio(12,13));
-                this.ratiosBucket.add(new Ratio(13,12));
-                this.ratiosBucket.add(new Ratio(4,3));
-                this.ratiosBucket.add(new Ratio(5,3));
-                this.ratiosBucket.add(new Ratio(13,7));
-                this.ratiosBucket.add(new Ratio(18,7));
-                this.ratiosBucket.add(new Ratio(19,6));
-            break;
-        case MORE_THAN_SEVENTYFIVE_BLOCK:
-                this.ratiosBucket.add(new Ratio(7,6));
-                this.ratiosBucket.add(new Ratio(3,2));
-                this.ratiosBucket.add(new Ratio(2,1));
-                this.ratiosBucket.add(new Ratio(18,7));
-                this.ratiosBucket.add(new Ratio(18,5));
-                this.ratiosBucket.add(new Ratio(21,4));
-                this.ratiosBucket.add(new Ratio(9,1));
-                this.ratiosBucket.add(new Ratio(24,1));
+        case SOME_OF_THE_DOTS_BLOCK:
+        case SOME_DOTS_BLOCK:
+        case EVERY_DOT_BLOCK:
+        case EACH_DOT_BLOCK:
+            this.ratiosBucket.add(new Ratio(1,2));
+            this.ratiosBucket.add(new Ratio(1,3));
+            this.ratiosBucket.add(new Ratio(3,1));
+            this.ratiosBucket.add(new Ratio(2,1));
+            this.ratiosBucket.add(new Ratio(3,2));
+            this.ratiosBucket.add(new Ratio(2,3));
             break;
         }
         System.out.println(this.ratiosBucket.toString());
@@ -170,25 +151,44 @@ public class DotsPairGenerator {
      * Scale the total number of dots to a range between MIN_DOTS and MAX_DOTS.
      * @param ratio
      */
-    private void getNewPair(Ratio ratio) {
-        int ratioNumOne = ratio.getNumOne();
-        int ratioNumTwo = ratio.getNumTwo();
-        int numDotsOne = ratio.getNumOne();
-        int numDotsTwo = ratio.getNumTwo();
-        while (numDotsOne + numDotsTwo < MIN_DOTS) {
-            numDotsOne += ratioNumOne;
-            numDotsTwo += ratioNumTwo;
+    private void getNewPair(Ratio ratioCircles, Ratio ratioSquares) {
+        int ratioCirclesNumOne = ratioCircles.getNumOne();
+        int ratioCirclesNumTwo = ratioCircles.getNumTwo();
+        int numCirclesOne = ratioCircles.getNumOne();
+        int numCirclesTwo = ratioCircles.getNumTwo();
+        while (numCirclesOne + numCirclesTwo < MIN_DOTS) {
+            numCirclesOne += ratioCirclesNumOne;
+            numCirclesTwo += ratioCirclesNumTwo;
         }
-        int max = (MAX_DOTS - (numDotsOne + numDotsTwo)) / (ratioNumOne + ratioNumTwo);
+        int max = (MAX_DOTS - (numCirclesOne + numCirclesTwo)) / (ratioCirclesNumOne + ratioCirclesNumTwo);
+        if (max <= 0) {
+        	max = 1;
+        }
         int randMax = randomGenerator.nextInt(max);
         for (int i = 0; i < randMax; i++) {
-            numDotsOne += ratioNumOne;
-            numDotsTwo += ratioNumTwo;
+            numCirclesOne += ratioCirclesNumOne;
+            numCirclesTwo += ratioCirclesNumTwo;
         }
-        this.checkAndSet(numDotsOne, numDotsTwo);
-        System.out.println(numDotsOne + " " + numDotsTwo);
-        System.out.println((double) numDotsOne / (numDotsOne + numDotsTwo));
-        System.out.println((double) numDotsTwo / (numDotsOne + numDotsTwo));
+        
+        int ratioSquaresNumOne = ratioSquares.getNumOne();
+        int ratioSquaresNumTwo = ratioSquares.getNumTwo();
+        int numSquaresOne = ratioCircles.getNumOne();
+        int numSquaresTwo = ratioCircles.getNumTwo();
+        while (numCirclesOne + numCirclesTwo < MIN_DOTS) {
+            numCirclesOne += ratioCirclesNumOne;
+            numCirclesTwo += ratioCirclesNumTwo;
+        }
+        int maxT = (MAX_DOTS - (numCirclesOne + numCirclesTwo)) / (ratioCirclesNumOne + ratioCirclesNumTwo);
+        if (max <= 0) {
+        	max = 1;
+        }
+        int randMaxT = randomGenerator.nextInt(max);
+        for (int i = 0; i < randMax; i++) {
+            numSquaresOne += ratioSquaresNumOne;
+            numSquaresTwo += ratioSquaresNumTwo;
+        }
+        
+        this.checkAndSet(numCirclesOne, numCirclesTwo, numSquaresOne, numSquaresTwo);
     }
     
     /**
@@ -196,9 +196,10 @@ public class DotsPairGenerator {
      * @param dotSetOne number of dots in dot set one.
      * @param dotSetTwo number of dots in dot set two.
      */
-    private void checkAndSet(int dotSetOne, int dotSetTwo) {  
-        ControlType controlTypeCandidate = generateAreaControlType(dotSetOne, dotSetTwo);
-        this.setDotsPair(new DotsPair(dotSetOne, dotSetTwo, controlTypeCandidate));
+    private void checkAndSet(int numCirclesOne, int numCirclesTwo, int numSquaresOne, int numSquaresTwo) {  
+        ControlType controlTypeCandidate = generateAreaControlType(numCirclesOne, numCirclesTwo);
+        this.setDotsPair(new DotsPair(numCirclesOne, numCirclesTwo,
+        		numSquaresOne, numSquaresTwo, controlTypeCandidate));
     }
     
     /**

@@ -20,15 +20,15 @@ public final class GameLogic {
     public static boolean checkWhichSideCorrect(DotsPair dotsPair, int blockMode) {
         boolean yesCorrect = false;
         switch (blockMode) {
-        case DotsPairGenerator.MORE_THAN_FIFTY_BLOCK:
-        case DotsPairGenerator.MORE_THAN_HALF_BLOCK:
+        case DotsPairGenerator.SOME_DOTS_BLOCK:
+        case DotsPairGenerator.SOME_OF_THE_DOTS_BLOCK:
             if (dotsPair.getDotSetOne().getTotalNumDots() > dotsPair.getDotSetTwo().getTotalNumDots()) {
                 yesCorrect = true;
             } else {
                 yesCorrect = false;
             }
             break;
-        case DotsPairGenerator.MORE_THAN_SIXTY_BLOCK:
+        case DotsPairGenerator.EACH_DOT_BLOCK:
             if ((double) dotsPair.getDotSetOne().getTotalNumDots() / (dotsPair.getDotSetOne().getTotalNumDots() 
                             + dotsPair.getDotSetTwo().getTotalNumDots()) > .6) {
                 yesCorrect = true;
@@ -36,7 +36,7 @@ public final class GameLogic {
                 yesCorrect = false;
             }
             break;
-        case DotsPairGenerator.MORE_THAN_SEVENTYFIVE_BLOCK:
+        case DotsPairGenerator.EVERY_DOT_BLOCK:
             if ((double) dotsPair.getDotSetOne().getTotalNumDots() / (dotsPair.getDotSetOne().getTotalNumDots() 
                             + dotsPair.getDotSetTwo().getTotalNumDots()) > .75) {
                 yesCorrect = true;

@@ -35,8 +35,12 @@ public class DotSet {
     static int MIN_DIAMETER;
     static int MAX_DIAMETER;
     
-    /** Total number of dots this dotSet will have */
+    /** Total number of circles and squares this dotSet will have */
     private int totalNumDots;
+    /** Total number of circles this dotSet will have */
+    private int totalNumCircles;
+    /** Total number of squares this dotSet will have */
+    private int totalNumSquares;
     
     /** Positions of every dot with respect to the canvas it is in */
     private ArrayList<Coordinate> positions;
@@ -67,9 +71,7 @@ public class DotSet {
         this.diameters = new ArrayList<Double>(); 
         
         this.totalArea = 0;
-        
-        if (AVERAGE_RADIUS_CONTROL) { this.fillDots(AVERAGE_DIAMETER_ARC, MAX_DIAMETER_VARIANCE_ARC); }
-        else { this.fillDots(); }
+        this.fillDots();
     }
     
     /**
@@ -87,6 +89,28 @@ public class DotSet {
         this.fillDots(otherDotSet);
     }
     
+    public DotSet(int numCircles, int numSquares) {
+    	loadConfig();
+    	this.totalNumCircles = numCircles;
+    	this.totalNumSquares = numSquares;
+    	this.totalNumDots = numSquares + numCircles;
+    	this.positions = new ArrayList<Coordinate>();
+        this.diameters = new ArrayList<Double>(); 
+        this.totalArea = 0;
+        this.fillDots();
+    }
+    
+    public DotSet(int numCircles, int numSquares, DotSet otherDotSet) {
+    	loadConfig();
+    	this.totalNumCircles = numCircles;
+    	this.totalNumSquares = numSquares;
+    	this.totalNumDots = numSquares + numCircles;
+    	this.positions = new ArrayList<Coordinate>();
+        this.diameters = new ArrayList<Double>(); 
+        this.totalArea = 0;
+        this.fillDots(otherDotSet);
+    }
+    
     private void loadConfig() {
         new Config();
         AVERAGE_RADIUS_CONTROL = Config.getPropertyBoolean("average.radius.control");
@@ -95,21 +119,6 @@ public class DotSet {
         
         MIN_DIAMETER = Config.getPropertyInt("min.diameter");
         MAX_DIAMETER = Config.getPropertyInt("max.diameter");
-    }
-    
-    /**
-     * Constructor for DotSet with a specified number of total dots to contain,
-     * the average diameter of the dot set, and the maximum variance in diameter.
-     * @param numDots total number of dots this dotSet will have.
-     * @param averageDiameter average diameter of all the dots in this dot set.
-     * @param maxDiameterVariance maximum variance allowed in the diameter.
-     */
-    public DotSet(int numDots, double averageDiameter, int maxDiameterVariance) {
-        this.setTotalNumDots(numDots);
-        this.positions = new ArrayList<Coordinate>();
-        this.diameters = new ArrayList<Double>(); 
-        
-        this.fillDots(averageDiameter, maxDiameterVariance); 
     }
     
     /**
@@ -123,45 +132,12 @@ public class DotSet {
             int diameter = randomGenerator.nextInt(MAX_DIAMETER - MIN_DIAMETER) + MIN_DIAMETER; 
             
             if (!overLapsOther(x, y, diameter)) {
-                this.addDotAndDiameterAndArea(x, y, diameter);
+            	if (i < this.totalNumCircles) {
+                    this.addDotAndDiameterAndArea(x, y, diameter, Shape.CIRCLE);
+            	} else {
+            		this.addDotAndDiameterAndArea(x, y, diameter, Shape.SQUARE);
+            	}
                 i++;
-            }
-        }
-    }
-    
-    /**
-     * Populate the dotSet with dots that have an average diameter and max variance.
-     * @param avgDiameter average diameter
-     * @param maxDiameterVariance max variance in diameter.
-     */
-    private void fillDots(double avgDiameter, int maxDiameterVariance) {
-        int dotsFilled = 0;
-        
-        while (dotsFilled < this.totalNumDots) {
-            
-            int x = randomGenerator.nextInt(SetUp.DOTS_CANVAS_WIDTH - MAX_DIAMETER);
-            int y = randomGenerator.nextInt(SetUp.DOTS_CANVAS_HEIGHT - MAX_DIAMETER);
-            
-            if (this.totalNumDots - dotsFilled >= 2) {
-                int diameterVariance = randomGenerator.nextInt(maxDiameterVariance) + 1;
-                
-                double diameterGreater = avgDiameter + diameterVariance;
-                double diameterLower = avgDiameter - diameterVariance;
-                
-                this.addDotNoOverlap(x, y, diameterGreater);
-                dotsFilled++;
-                
-                x = randomGenerator.nextInt(SetUp.DOTS_CANVAS_WIDTH - MAX_DIAMETER); 
-                y = randomGenerator.nextInt(SetUp.DOTS_CANVAS_HEIGHT - MAX_DIAMETER);
-                
-                this.addDotNoOverlap(x, y, diameterLower);
-                dotsFilled++;
-                
-            } else {
-                double diameter = avgDiameter;
-                
-                this.addDotNoOverlap(x, y, diameter);
-                dotsFilled++;
             }
         }
     }
@@ -175,27 +151,15 @@ public class DotSet {
             
             if (!overLapsOther(x, y, diameter) 
                     && !overLapsOtherInOtherDotSet(x, y, diameter, otherDotSet)) {
-                    this.addDotAndDiameterAndArea(x, y, diameter);
+            		if (i < this.totalNumCircles) {
+            			this.addDotAndDiameterAndArea(x, y, diameter, Shape.CIRCLE);
+            		} else {
+            			this.addDotAndDiameterAndArea(x, y, diameter, Shape.SQUARE);
+            		}
                     i++;
-                }
             }
         }
-    
-    
-
-    /**
-     * Add a dot to the dotSet without overlapping another dot.
-     * @param x X coordinate to attempt to add dot in.
-     * @param y Y coordinate to attempt to add dot in.
-     * @param diameter The diameter of the dot. 
-     */
-    private void addDotNoOverlap(int x, int y, double diameter) {
-        while (overLapsOther(x, y, diameter)) {
-            x = randomGenerator.nextInt(SetUp.DOTS_CANVAS_WIDTH - MAX_DIAMETER); 
-            y = randomGenerator.nextInt(SetUp.DOTS_CANVAS_HEIGHT - MAX_DIAMETER);
-        }
-        this.addDotAndDiameterAndArea(x, y, diameter);
-    }
+	}
 
     /**
      * Checks if a dot overlaps another dot in the dotSet.
@@ -257,10 +221,14 @@ public class DotSet {
      * @param y Y coordinate of the dot
      * @param diameter Diameter of the dot
      */
-    public void addDotAndDiameterAndArea(int x, int y, double diameter) {
-        this.positions.add(new Coordinate(x, y, Shape.CIRCLE));
+    public void addDotAndDiameterAndArea(int x, int y, double diameter, Shape shape) {
+        this.positions.add(new Coordinate(x, y, shape));
         this.diameters.add(diameter);
-        this.totalArea += Math.PI * Math.pow((diameter / 2), 2);
+        if (shape == Shape.CIRCLE) {
+            this.totalArea += Math.PI * Math.pow((diameter / 2), 2);
+        } else if (shape == Shape.SQUARE) {
+        	this.totalArea += Math.pow(diameter, 2);
+        }
     }
     
     /**
@@ -342,6 +310,22 @@ public class DotSet {
     public void setTotalNumDots(int totalNumDots) {
         this.totalNumDots = totalNumDots;
     }
+
+	public int getTotalNumCircles() {
+		return totalNumCircles;
+	}
+
+	public void setTotalNumCircles(int totalNumCircles) {
+		this.totalNumCircles = totalNumCircles;
+	}
+
+	public int getTotalNumSquares() {
+		return totalNumSquares;
+	}
+
+	public void setTotalNumSquares(int totalNumSquares) {
+		this.totalNumSquares = totalNumSquares;
+	}
 
 
 }

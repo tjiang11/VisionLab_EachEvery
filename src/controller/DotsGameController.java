@@ -7,6 +7,7 @@ import java.util.logging.Logger;
 
 import config.Config;
 import model.ColorPair;
+import model.Coordinate.Shape;
 import model.DotSet;
 import model.DotsPair;
 import model.DotsPairGenerator;
@@ -572,16 +573,16 @@ public class DotsGameController implements GameController {
         String colorOneName = this.colorOne;
         String colorTwoName = this.colorTwo;
         switch (this.dpg.getBlockMode()) {
-        case DotsPairGenerator.MORE_THAN_HALF_BLOCK:
+        case DotsPairGenerator.SOME_DOTS_BLOCK:
             theView.getQuestion().setText("Is " + colorOneName + " more than " + colorTwoName + "?");
             break;
-        case DotsPairGenerator.MORE_THAN_FIFTY_BLOCK:
+        case DotsPairGenerator.SOME_OF_THE_DOTS_BLOCK:
             theView.getQuestion().setText("Is " + colorOneName + " more than 50% of the total?");
             break;
-        case DotsPairGenerator.MORE_THAN_SIXTY_BLOCK:
+        case DotsPairGenerator.EACH_DOT_BLOCK:
             theView.getQuestion().setText("Is " + colorOneName + " more than 60% of the total?");
             break;
-        case DotsPairGenerator.MORE_THAN_SEVENTYFIVE_BLOCK:
+        case DotsPairGenerator.EVERY_DOT_BLOCK:
             theView.getQuestion().setText("Is " + colorOneName + " more than 75% of the total?");
             break;
         default:
@@ -720,9 +721,15 @@ public class DotsGameController implements GameController {
             int x = dotSet.getPositions().get(i).x;
             int y = dotSet.getPositions().get(i).y;
 
-            graphicsContext.fillRect(x, y, 
-                    dotSet.getDiameters().get(i), 
-                    dotSet.getDiameters().get(i));
+            if (dotSet.getPositions().get(i).shape == Shape.CIRCLE) {
+                graphicsContext.fillOval(x, y, 
+                        dotSet.getDiameters().get(i), 
+                        dotSet.getDiameters().get(i));
+            } else if (dotSet.getPositions().get(i).shape == Shape.SQUARE) {
+                graphicsContext.fillRect(x, y, 
+                        dotSet.getDiameters().get(i), 
+                        dotSet.getDiameters().get(i));
+            }
         }
     }
 
